@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2B2420">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>About Emotions — Mood Diary</title>
+<meta name="apple-mobile-web-app-title" content="Mood">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Spectral:ital,wght@0,400;0,500;1,400&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDE6D4;
+  --paper-light:#F8F3E7;
+  --paper-deep:#E2D9C3;
+  --ink:#2B2420;
+  --ink-soft:#5C5347;
+  --moss:#6B7A54;
+  --moss-deep:#4E5B3C;
+  --rust:#A8552E;
+  --blush:#C98C82;
+  --ochre:#C9954A;
+  --dustyblue:#8FA8AC;
+  --plum:#6B4C5C;
+  --line:rgba(43,36,32,0.16);
+
+  --happy:var(--ochre);
+  --sad:var(--dustyblue);
+  --angry:var(--rust);
+  --anxious:var(--plum);
+
+  --muted:#6E6659;
+  --radius:14px;
+  --pad:clamp(16px,4vw,22px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Spectral',Georgia,serif;
+  font-size:16px;
+  line-height:1.5;
+  padding:env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + 60px);
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:640px;margin:0 auto;padding:0 var(--pad)}
+
+header{padding:26px 0 18px;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+h1{
+  font-family:'Fraunces',Georgia,serif;
+  font-weight:500;font-size:clamp(30px,8vw,40px);
+  margin:0;letter-spacing:-.01em;line-height:1;
+}
+.stamp{
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);white-space:nowrap;
+}
+
+.intro{
+  font-size:15px;color:var(--ink-soft);margin:0 0 26px;
+  padding-bottom:22px;border-bottom:1px solid var(--line);
+}
+
+.lbl{
+  display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:10px;
+}
+
+section{margin-bottom:34px}
+
+/* the sequence */
+.seq{display:flex;flex-direction:column;gap:0;margin-bottom:12px}
+.seq-step{
+  background:var(--paper-light);border:1px solid var(--line);border-radius:10px;
+  padding:14px 15px;
+}
+.seq-step h3{
+  font-family:'Fraunces',serif;font-weight:500;font-size:19px;margin:0 0 4px;
+}
+.seq-step p{margin:0;font-size:14px;color:var(--ink-soft)}
+.seq-arrow{
+  text-align:center;color:var(--muted);font-size:15px;padding:7px 0;line-height:1;
+}
+.aside{
+  font-family:'Caveat',cursive;font-size:19px;color:var(--ink-soft);
+  line-height:1.45;margin:14px 0 0;padding-left:14px;border-left:2px solid var(--line);
+}
+
+/* emotion purpose cards */
+.purpose{display:flex;flex-direction:column;gap:10px}
+.pcard{
+  background:var(--paper-light);border:1px solid var(--line);
+  border-left:4px solid var(--line);border-radius:10px;padding:14px 15px;
+}
+.pcard[data-k="happy"]{border-left-color:var(--happy)}
+.pcard[data-k="sad"]{border-left-color:var(--sad)}
+.pcard[data-k="angry"]{border-left-color:var(--angry)}
+.pcard[data-k="anxious"]{border-left-color:var(--anxious)}
+.pcard-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}
+.pcard-em{font-weight:600;font-size:16px}
+.pcard-sig{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.pcard p{margin:0;font-size:14px;color:var(--ink-soft)}
+
+/* body pathway */
+.path{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  background:var(--paper-light);border:1px solid var(--line);border-radius:10px;
+  padding:18px 14px;margin-bottom:10px;
+}
+.path b{font-family:'Fraunces',serif;font-weight:500;font-size:17px}
+.path span{color:var(--muted)}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tcard{
+  background:var(--paper-light);border:1px solid var(--line);border-radius:10px;padding:13px 14px;
+}
+.tcard h4{
+  font-family:'Fraunces',serif;font-weight:500;font-size:15px;margin:0 0 5px;
+}
+.tcard[data-t="bio"] h4{color:var(--plum)}
+.tcard[data-t="learnt"] h4{color:var(--moss-deep)}
+.tcard p{margin:0;font-size:13px;color:var(--ink-soft)}
+
+.signals{
+  background:var(--paper-deep);border-radius:10px;padding:13px 15px;
+  font-size:14px;color:var(--ink-soft);margin-top:10px;
+}
+.signals b{color:var(--ink);font-weight:600}
+
+/* how logging helps */
+.steps{border-top:1px solid var(--line)}
+.step{
+  display:flex;gap:14px;align-items:flex-start;
+  padding:14px 0;border-bottom:1px solid var(--line);
+}
+.step-n{
+  font-family:'Fraunces',serif;font-weight:500;font-size:26px;
+  color:var(--muted);width:26px;flex-shrink:0;line-height:1.05;
+}
+.step h4{font-size:15px;font-weight:600;margin:0 0 3px}
+.step p{margin:0;font-size:14px;color:var(--ink-soft)}
+
+.closing{
+  font-family:'Caveat',cursive;font-size:22px;color:var(--ink-soft);
+  text-align:center;margin:30px 0 0;line-height:1.4;
+}
+
+@media(max-width:460px){
+  .two{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>About Emotions</h1>
+  <span class="stamp">Why we log</span>
+</header>
+
+<p class="intro">Emotions are not random and they are not faults. Each one is produced for a reason, and each one is trying to tell you something. This is what your diary entries are built on.</p>
+
+<section>
+  <span class="lbl">How an emotion gets made</span>
+  <div class="seq">
+    <div class="seq-step">
+      <h3>Input</h3>
+      <p>Your five senses take in information from a situation.</p>
+    </div>
+    <div class="seq-arrow">↓</div>
+    <div class="seq-step">
+      <h3>Processing</h3>
+      <p>Your brain compares it against memory and past experience.</p>
+    </div>
+    <div class="seq-arrow">↓</div>
+    <div class="seq-step">
+      <h3>Output</h3>
+      <p>An emotion is produced, and that emotion drives an action.</p>
+    </div>
+  </div>
+  <p class="aside">The same event can produce different emotions in different people, because it's being compared against different stored memories.</p>
+</section>
+
+<section>
+  <span class="lbl">What each emotion is for</span>
+  <div class="purpose">
+    <div class="pcard" data-k="happy">
+      <div class="pcard-top">
+        <span class="pcard-em">Happy</span>
+        <span class="pcard-sig">Signals gain</span>
+      </div>
+      <p>Something was achieved or gained. It reinforces the behaviour that got you there, so you repeat it.</p>
+    </div>
+    <div class="pcard" data-k="sad">
+      <div class="pcard-top">
+        <span class="pcard-em">Sad</span>
+        <span class="pcard-sig">Signals loss</span>
+      </div>
+      <p>Something was lost or damaged. Its purpose is to communicate a need and invite support, comfort, or care.</p>
+    </div>
+    <div class="pcard" data-k="angry">
+      <div class="pcard-top">
+        <span class="pcard-em">Angry</span>
+        <span class="pcard-sig">Signals injustice</span>
+      </div>
+      <p>Something registers as unfair or wrong. It pushes you to change the situation, or to change how you're acting in it.</p>
+    </div>
+    <div class="pcard" data-k="anxious">
+      <div class="pcard-top">
+        <span class="pcard-em">Anxious</span>
+        <span class="pcard-sig">Signals threat</span>
+      </div>
+      <p>Something registers as a threat. This one is innate and inherited, produced to protect you and keep you alert. It's survival wiring, not a flaw.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <span class="lbl">Mind, body, behaviour</span>
+  <div class="path">
+    <b>Mind</b><span>→</span><b>Body</b><span>→</span><b>Behaviour</b>
+  </div>
+  <div class="two">
+    <div class="tcard" data-t="bio">
+      <h4>Biological reaction</h4>
+      <p>Automatic and innate. Fires before thought when something registers as a threat. Not a choice.</p>
+    </div>
+    <div class="tcard" data-t="learnt">
+      <h4>Learnt reaction</h4>
+      <p>Built from thinking and past experience. This is the part that can be noticed, traced, and changed.</p>
+    </div>
+  </div>
+  <p class="signals"><b>What the body does:</b> muscles tense, heart rate and blood pressure rise, breathing changes. These often show up before you consciously notice the emotion, which makes them useful early signals.</p>
+</section>
+
+<section>
+  <span class="lbl">Why logging works</span>
+  <div class="steps">
+    <div class="step">
+      <span class="step-n">1</span>
+      <div>
+        <h4>Notice the pattern</h4>
+        <p>Log two or three entries a day. Over time the repeats become visible, and a pattern is much easier to work with than a single bad moment.</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-n">2</span>
+      <div>
+        <h4>Create a gap</h4>
+        <p>Acting without thinking first is where most regret comes from. Writing the emotion down puts a pause between feeling it and acting on it.</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-n">3</span>
+      <div>
+        <h4>Trace it back</h4>
+        <p>Follow the reaction to the stored experience it came from. Naming the emotion accurately is the first step, which is what the Words tab is for.</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-n">4</span>
+      <div>
+        <h4>Understand it</h4>
+        <p>Much of the intensity comes from responding to an old memory rather than the situation actually in front of you. Seeing that changes what you do next.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<p class="closing">The aim is not to stop feeling.<br>It's to understand what the feeling is for.</p>
+
+</div>
+</body>
+</html>

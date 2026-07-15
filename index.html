@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2B2420">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Mood Diary</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Mood">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Spectral:ital,wght@0,400;0,500;1,400&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* The Pattern Within palette */
+  --paper:#EDE6D4;
+  --paper-light:#F8F3E7;
+  --paper-deep:#E2D9C3;
+  --ink:#2B2420;
+  --ink-soft:#5C5347;
+  --moss:#6B7A54;
+  --moss-deep:#4E5B3C;
+  --rust:#A8552E;
+  --blush:#C98C82;
+  --ochre:#C9954A;
+  --dustyblue:#8FA8AC;
+  --plum:#6B4C5C;
+  --line:rgba(43,36,32,0.16);
+
+  /* emotion categories mapped onto the palette */
+  --happy:var(--ochre);
+  --sad:var(--dustyblue);
+  --angry:var(--rust);
+  --anxious:var(--plum);
+
+  --muted:#6E6659;
+  --radius:14px;
+  --pad:clamp(16px,4vw,22px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Spectral',Georgia,serif;
+  font-size:16px;
+  line-height:1.5;
+  padding:env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + 90px);
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:640px;margin:0 auto;padding:0 var(--pad)}
+
+header{padding:26px 0 18px;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+h1{
+  font-family:'Fraunces',Georgia,serif;
+  font-weight:500;font-size:clamp(30px,8vw,40px);
+  margin:0;letter-spacing:-.01em;line-height:1;
+}
+.stamp{
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);white-space:nowrap;
+}
+
+/* tabs */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.tab{
+  appearance:none;background:none;border:0;padding:11px 14px;
+  font:inherit;font-size:13px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.tab:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+.panel[hidden]{display:none}
+
+/* fields */
+.field{margin-bottom:20px}
+label,.lbl{
+  display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:8px;
+}
+input[type=text],input[type=date],input[type=time],textarea,select{
+  width:100%;font:inherit;color:var(--ink);
+  background:var(--paper-light);border:1px solid var(--line);border-radius:10px;
+  padding:12px 13px;
+}
+textarea{resize:vertical;min-height:78px;line-height:1.55}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--ink);outline-offset:1px;border-color:var(--ink)}
+
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* emotion chips */
+.chips{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.chip{
+  appearance:none;cursor:pointer;font:inherit;font-size:14px;
+  border:1px solid var(--line);background:var(--paper-light);color:var(--ink-soft);
+  border-radius:10px;padding:14px 4px;text-align:center;
+  transition:background .12s,color .12s,border-color .12s;
+}
+.chip[aria-pressed="true"]{border-color:transparent;font-weight:600}
+.chip[data-k="happy"][aria-pressed="true"]{background:var(--happy);color:var(--ink)}
+.chip[data-k="sad"][aria-pressed="true"]{background:var(--sad);color:var(--ink)}
+.chip[data-k="angry"][aria-pressed="true"]{background:var(--angry);color:var(--paper-light)}
+.chip[data-k="anxious"][aria-pressed="true"]{background:var(--anxious);color:var(--paper-light)}
+.chip:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+/* mic */
+.mic-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.mic{
+  appearance:none;cursor:pointer;font:inherit;font-size:12px;
+  display:inline-flex;align-items:center;gap:6px;
+  border:1px solid var(--line);background:var(--paper-light);color:var(--ink-soft);
+  border-radius:999px;padding:6px 12px;
+}
+.mic:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.mic.live{background:var(--angry);color:#fff;border-color:transparent}
+.mic.live .dot{animation:pulse 1s infinite}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+@keyframes pulse{50%{opacity:.25}}
+@media(prefers-reduced-motion:reduce){.mic.live .dot{animation:none}}
+
+/* save */
+.save{
+  appearance:none;cursor:pointer;font:inherit;font-size:16px;font-weight:500;
+  width:100%;border:0;border-radius:12px;padding:16px;
+  background:var(--ink);color:var(--paper);
+}
+.save:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.save:disabled{opacity:.4;cursor:default}
+
+.note{font-size:13px;color:var(--muted);margin:10px 0 0}
+
+/* entries */
+.entry{
+  background:var(--paper-light);border:1px solid var(--line);border-left:4px solid var(--line);
+  border-radius:10px;padding:14px;margin-bottom:10px;
+}
+.entry[data-k="happy"]{border-left-color:var(--happy)}
+.entry[data-k="sad"]{border-left-color:var(--sad)}
+.entry[data-k="angry"]{border-left-color:var(--angry)}
+.entry[data-k="anxious"]{border-left-color:var(--anxious)}
+.entry-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px}
+.entry-em{font-weight:600;font-size:15px}
+.entry-when{font-size:12px;color:var(--muted);white-space:nowrap}
+.entry p{margin:5px 0;font-size:14px;color:var(--ink-soft)}
+.entry .k{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:block}
+.del{
+  appearance:none;background:none;border:0;color:var(--muted);cursor:pointer;
+  font:inherit;font-size:12px;padding:4px 0;margin-top:6px;text-decoration:underline;
+}
+
+.empty{
+  border:1px dashed var(--line);border-radius:12px;padding:34px 20px;text-align:center;color:var(--muted);
+  font-family:'Caveat',cursive;font-size:22px;
+}
+
+/* emotion word lists */
+.words h3{
+  font-family:'Fraunces',serif;font-weight:500;font-size:22px;
+  margin:22px 0 8px;display:flex;align-items:center;gap:8px;
+}
+.swatch{width:10px;height:10px;border-radius:50%;display:inline-block}
+.words p{margin:0;font-size:14px;color:var(--ink-soft);line-height:1.9}
+.word{
+  cursor:pointer;border:0;background:none;font:inherit;font-size:14px;
+  color:var(--ink-soft);padding:2px 7px;border-radius:6px;
+  border:1px solid var(--line);margin:0 3px 5px 0;
+}
+.word:active{background:var(--paper-deep)}
+
+/* reminders */
+.rem{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.rem input[type=time]{flex:1}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.btn2{
+  appearance:none;cursor:pointer;font:inherit;font-size:14px;
+  border:1px solid var(--ink);background:none;color:var(--ink);
+  border-radius:10px;padding:11px 16px;flex:1;min-width:130px;
+}
+.btn2.warn{border-color:var(--angry);color:var(--angry)}
+
+hr{border:0;border-top:1px solid var(--line);margin:26px 0}
+
+.toast{
+  position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 22px);
+  transform:translateX(-50%) translateY(120%);
+  background:var(--ink);color:var(--paper);padding:12px 20px;border-radius:999px;
+  font-size:14px;transition:transform .22s ease;z-index:50;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+@media(prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Mood Diary</h1>
+  <span class="stamp" id="today"></span>
+</header>
+
+<div class="tabs" role="tablist">
+  <button class="tab" role="tab" id="t-log" aria-selected="true" aria-controls="p-log">Log</button>
+  <button class="tab" role="tab" id="t-entries" aria-selected="false" aria-controls="p-entries">Entries</button>
+  <button class="tab" role="tab" id="t-words" aria-selected="false" aria-controls="p-words">Words</button>
+  <button class="tab" role="tab" id="t-set" aria-selected="false" aria-controls="p-set">Setup</button>
+</div>
+
+<!-- LOG -->
+<section class="panel" id="p-log" role="tabpanel" aria-labelledby="t-log">
+  <div class="field row">
+    <div><label for="f-date">Date</label><input type="date" id="f-date"></div>
+    <div><label for="f-time">Time</label><input type="time" id="f-time"></div>
+  </div>
+
+  <div class="field">
+    <span class="lbl">Emotion</span>
+    <div class="chips" id="chips">
+      <button class="chip" data-k="happy" aria-pressed="false">Happy</button>
+      <button class="chip" data-k="sad" aria-pressed="false">Sad</button>
+      <button class="chip" data-k="angry" aria-pressed="false">Angry</button>
+      <button class="chip" data-k="anxious" aria-pressed="false">Anxious</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="f-em">Describe it further</label>
+    <div class="mic-row"><button class="mic" data-t="f-em"><span class="dot"></span> Speak</button></div>
+    <input type="text" id="f-em" placeholder="hopeless, restless, quietly furious...">
+    <p class="note">Open the Words tab for a full list to pick from.</p>
+  </div>
+
+  <div class="field">
+    <label for="f-sit">What was the situation</label>
+    <div class="mic-row"><button class="mic" data-t="f-sit"><span class="dot"></span> Speak</button></div>
+    <textarea id="f-sit" placeholder="Where were you, who with, what was going on."></textarea>
+  </div>
+
+  <div class="field">
+    <label for="f-what">What happened with the emotion</label>
+    <div class="mic-row"><button class="mic" data-t="f-what"><span class="dot"></span> Speak</button></div>
+    <textarea id="f-what" placeholder="What you did with it, where it went, how long it stayed."></textarea>
+  </div>
+
+  <button class="save" id="save">Save entry</button>
+  <p class="note" id="mic-note"></p>
+</section>
+
+<!-- ENTRIES -->
+<section class="panel" id="p-entries" role="tabpanel" aria-labelledby="t-entries" hidden>
+  <div id="list"></div>
+</section>
+
+<!-- WORDS -->
+<section class="panel words" id="p-words" role="tabpanel" aria-labelledby="t-words" hidden>
+  <p class="note" style="margin-top:0">Tap a word to drop it into the description field.</p>
+  <div id="wordlists"></div>
+</section>
+
+<!-- SETUP -->
+<section class="panel" id="p-set" role="tabpanel" aria-labelledby="t-set" hidden>
+  <span class="lbl">Reminder times</span>
+  <div class="rem"><input type="time" id="r1" aria-label="First reminder"></div>
+  <div class="rem"><input type="time" id="r2" aria-label="Second reminder"></div>
+  <div class="rem"><input type="time" id="r3" aria-label="Third reminder"></div>
+  <div class="tools">
+    <button class="btn2" id="enable-rem">Turn reminders on</button>
+  </div>
+  <p class="note">Reminders only fire while this page is open in a tab or added to your home screen. If the phone closes it, use your phone's own alarm app as the backstop.</p>
+
+  <hr>
+
+  <span class="lbl">Your data</span>
+  <p class="note" style="margin-top:0">Entries are stored on this device only. Nothing is uploaded.</p>
+  <div class="tools">
+    <button class="btn2" id="export">Export CSV</button>
+    <button class="btn2 warn" id="clear">Delete all entries</button>
+  </div>
+
+  <hr>
+  <span class="lbl">Install</span>
+  <div class="tools" id="install-wrap" hidden>
+    <button class="btn2" id="install">Install app</button>
+  </div>
+  <p class="note" style="margin-top:8px" id="install-hint">iPhone: Share, then Add to Home Screen. Android: menu, then Install app. It opens fullscreen and works offline.</p>
+</section>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+
+var WORDS = {
+  happy:{label:'Happy',color:'var(--happy)',list:['Content','Calm','Settled','Pleased','Grateful','Warm','Relieved','Amused','Playful','Hopeful','Proud','Confident','Energised','Excited','Delighted','Joyful','Elated','Connected','Loved','Peaceful','Satisfied','Optimistic','Light','Free']},
+  sad:{label:'Sad',color:'var(--sad)',list:['Low','Flat','Down','Wistful','Disappointed','Discouraged','Lonely','Homesick','Hurt','Rejected','Left out','Heavy','Tearful','Grieving','Empty','Numb','Hopeless','Despairing','Worthless','Ashamed','Guilty','Regretful','Defeated','Withdrawn','Depleted']},
+  angry:{label:'Angry',color:'var(--angry)',list:['Annoyed','Irritated','Impatient','Frustrated','Exasperated','Indignant','Resentful','Bitter','Defensive','Dismissed','Disrespected','Provoked','Furious','Enraged','Seething','Contemptuous','Vengeful','Jealous','Betrayed','Powerless','Cornered','Fed up']},
+  anxious:{label:'Anxious',color:'var(--anxious)',list:['Uneasy','On edge','Restless','Alert','Apprehensive','Nervous','Worried','Tense','Dreading','Self-conscious','Exposed','Insecure','Overwhelmed','Panicky','Frozen','Scattered','Wired','Trapped','Fearful','Terrified','Braced','Scanning','Hypervigilant','Shutdown']}
+};
+
+var KEY='mooddiary.entries.v1', RKEY='mooddiary.reminders.v1';
+var $=function(s){return document.querySelector(s)};
+var entries=[], chosen=null, timers=[];
+
+function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1900)}
+function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('Could not save. Storage may be full.')}}
+function esc(s){var d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
+
+/* tabs */
+Array.prototype.forEach.call(document.querySelectorAll('.tab'),function(tab){
+  tab.addEventListener('click',function(){
+    Array.prototype.forEach.call(document.querySelectorAll('.tab'),function(t){
+      var on=t===tab;
+      t.setAttribute('aria-selected',on?'true':'false');
+      document.getElementById(t.getAttribute('aria-controls')).hidden=!on;
+    });
+    window.scrollTo(0,0);
+  });
+});
+
+/* date + time defaults */
+function now(){
+  var d=new Date(), p=function(n){return String(n).padStart(2,'0')};
+  $('#f-date').value=d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+  $('#f-time').value=p(d.getHours())+':'+p(d.getMinutes());
+}
+$('#today').textContent=new Date().toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'});
+
+/* chips */
+Array.prototype.forEach.call(document.querySelectorAll('.chip'),function(c){
+  c.addEventListener('click',function(){
+    var k=c.dataset.k, on=chosen===k;
+    chosen=on?null:k;
+    Array.prototype.forEach.call(document.querySelectorAll('.chip'),function(o){
+      o.setAttribute('aria-pressed',o.dataset.k===chosen?'true':'false');
+    });
+  });
+});
+
+/* words */
+(function(){
+  var html='';
+  Object.keys(WORDS).forEach(function(k){
+    var g=WORDS[k];
+    html+='<h3><span class="swatch" style="background:'+g.color+'"></span>'+g.label+'</h3><p>';
+    g.list.forEach(function(w){html+='<button class="word" data-k="'+k+'" data-w="'+esc(w)+'">'+esc(w)+'</button>'});
+    html+='</p>';
+  });
+  $('#wordlists').innerHTML=html;
+  $('#wordlists').addEventListener('click',function(e){
+    var b=e.target.closest('.word'); if(!b) return;
+    var f=$('#f-em'), w=b.dataset.w;
+    f.value = f.value.trim() ? f.value.replace(/,\s*$/,'')+', '+w.toLowerCase() : w;
+    if(!chosen){
+      chosen=b.dataset.k;
+      Array.prototype.forEach.call(document.querySelectorAll('.chip'),function(o){
+        o.setAttribute('aria-pressed',o.dataset.k===chosen?'true':'false');
+      });
+    }
+    toast(w+' added');
+  });
+})();
+
+/* voice */
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR){
+  Array.prototype.forEach.call(document.querySelectorAll('.mic'),function(m){m.remove()});
+  $('#mic-note').textContent='Voice input is not supported in this browser. Use your keyboard mic key instead. Chrome and Safari support it.';
+}else{
+  var active=null;
+  Array.prototype.forEach.call(document.querySelectorAll('.mic'),function(btn){
+    btn.addEventListener('click',function(){
+      if(active){active.stop();return}
+      var target=document.getElementById(btn.dataset.t);
+      var r=new SR(); r.lang='en-GB'; r.interimResults=true; r.continuous=true;
+      var base=target.value?target.value.trim()+' ':'';
+      r.onstart=function(){active=r;btn.classList.add('live');btn.lastChild.textContent=' Listening, tap to stop'};
+      r.onresult=function(e){
+        var s='';
+        for(var i=0;i<e.results.length;i++) s+=e.results[i][0].transcript;
+        target.value=base+s.trim();
+      };
+      r.onerror=function(e){toast(e.error==='not-allowed'?'Microphone blocked. Allow mic access.':'Voice error: '+e.error)};
+      r.onend=function(){active=null;btn.classList.remove('live');btn.lastChild.textContent=' Speak'};
+      try{r.start()}catch(err){toast('Could not start mic')}
+    });
+  });
+}
+
+/* entries */
+function render(){
+  var l=$('#list');
+  if(!entries.length){l.innerHTML='<div class="empty">Nothing recorded yet.</div>';return}
+  l.innerHTML=entries.map(function(e,i){
+    var t=new Date(e.date+'T'+e.time);
+    var when=t.toLocaleDateString(undefined,{day:'numeric',month:'short'})+' · '+e.time;
+    var head=(WORDS[e.cat]?WORDS[e.cat].label:'Noted')+(e.detail?' · '+e.detail:'');
+    return '<div class="entry" data-k="'+esc(e.cat||'')+'">'+
+      '<div class="entry-top"><span class="entry-em">'+esc(head)+'</span><span class="entry-when">'+esc(when)+'</span></div>'+
+      (e.situation?'<p><span class="k">Situation</span>'+esc(e.situation)+'</p>':'')+
+      (e.outcome?'<p><span class="k">What happened with it</span>'+esc(e.outcome)+'</p>':'')+
+      '<button class="del" data-i="'+i+'">Delete</button></div>';
+  }).join('');
+}
+$('#list').addEventListener('click',function(e){
+  var b=e.target.closest('.del'); if(!b) return;
+  if(!confirm('Delete this entry?')) return;
+  entries.splice(+b.dataset.i,1); save(KEY,entries); render(); toast('Deleted');
+});
+
+$('#save').addEventListener('click',function(){
+  var em=$('#f-em').value.trim(), sit=$('#f-sit').value.trim(), wh=$('#f-what').value.trim();
+  if(!chosen && !em){toast('Pick an emotion or describe one');return}
+  entries.unshift({date:$('#f-date').value,time:$('#f-time').value,cat:chosen,detail:em,situation:sit,outcome:wh});
+  save(KEY,entries); render();
+  $('#f-em').value='';$('#f-sit').value='';$('#f-what').value='';
+  chosen=null;
+  Array.prototype.forEach.call(document.querySelectorAll('.chip'),function(o){o.setAttribute('aria-pressed','false')});
+  now(); toast('Saved');
+});
+
+/* export */
+$('#export').addEventListener('click',function(){
+  if(!entries.length){toast('Nothing to export');return}
+  var q=function(s){return '"'+String(s==null?'':s).replace(/"/g,'""')+'"'};
+  var rows=[['Date','Time','Emotion','Described further','Situation','What happened with the emotion']];
+  entries.slice().reverse().forEach(function(e){
+    rows.push([e.date,e.time,WORDS[e.cat]?WORDS[e.cat].label:'',e.detail,e.situation,e.outcome].map(q));
+  });
+  var csv='\ufeff'+rows.map(function(r){return r.join(',')}).join('\r\n');
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='mood-diary-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click(); URL.revokeObjectURL(a.href); toast('Exported');
+});
+
+$('#clear').addEventListener('click',function(){
+  if(!confirm('Delete every entry permanently? Export first if you want a copy.')) return;
+  entries=[]; save(KEY,entries); render(); toast('All entries deleted');
+});
+
+/* reminders */
+function schedule(){
+  timers.forEach(clearTimeout); timers=[];
+  if(Notification.permission!=='granted') return;
+  ['r1','r2','r3'].forEach(function(id){
+    var v=$('#'+id).value; if(!v) return;
+    var p=v.split(':'), t=new Date();
+    t.setHours(+p[0],+p[1],0,0);
+    if(t<=new Date()) t.setDate(t.getDate()+1);
+    var ms=t-new Date();
+    if(ms<2147483647) timers.push(setTimeout(function(){
+      notify(); schedule();
+    },ms));
+  });
+}
+function notify(){
+  var body='How are you right now?';
+  if(navigator.serviceWorker && navigator.serviceWorker.controller){
+    navigator.serviceWorker.controller.postMessage({type:'NOTIFY',body:body});
+  }else if(navigator.serviceWorker && navigator.serviceWorker.ready){
+    navigator.serviceWorker.ready.then(function(reg){
+      reg.showNotification('Mood diary',{body:body,icon:'./icon-192.png',tag:'mood-reminder'});
+    });
+  }else{
+    try{new Notification('Mood diary',{body:body})}catch(e){}
+  }
+}
+/* Timers stall when the app is backgrounded. Recheck on return. */
+document.addEventListener('visibilitychange',function(){
+  if(!document.hidden) schedule();
+});
+['r1','r2','r3'].forEach(function(id){
+  $('#'+id).addEventListener('change',function(){
+    save(RKEY,{r1:$('#r1').value,r2:$('#r2').value,r3:$('#r3').value});
+    schedule();
+  });
+});
+$('#enable-rem').addEventListener('click',function(){
+  if(!('Notification' in window)){toast('Notifications not supported here');return}
+  Notification.requestPermission().then(function(p){
+    if(p==='granted'){schedule();toast('Reminders on')}
+    else toast('Notifications blocked in browser settings');
+  });
+});
+
+/* service worker */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+
+/* install prompt (Android/Chrome/Edge; iOS uses the Share menu) */
+var deferred=null;
+window.addEventListener('beforeinstallprompt',function(e){
+  e.preventDefault(); deferred=e;
+  $('#install-wrap').hidden=false;
+});
+$('#install').addEventListener('click',function(){
+  if(!deferred) return;
+  deferred.prompt();
+  deferred.userChoice.then(function(){deferred=null;$('#install-wrap').hidden=true});
+});
+window.addEventListener('appinstalled',function(){
+  $('#install-wrap').hidden=true; toast('Installed');
+});
+if(window.matchMedia('(display-mode: standalone)').matches||navigator.standalone){
+  $('#install-hint').textContent='Running as an installed app.';
+}
+
+/* init */
+entries=load(KEY,[]);
+var r=load(RKEY,{r1:'09:00',r2:'14:00',r3:'21:00'});
+$('#r1').value=r.r1;$('#r2').value=r.r2;$('#r3').value=r.r3;
+now(); render(); schedule();
+})();
+</script>
+</body>
+</html>
