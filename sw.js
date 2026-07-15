@@ -1,9 +1,10 @@
 /* Mood Diary service worker. Bump CACHE when files change. */
-var CACHE = 'mood-diary-v2';
+var CACHE = 'mood-diary-v3';
 
 var ASSETS = [
   './',
   './index.html',
+  './about-emotions.html',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
